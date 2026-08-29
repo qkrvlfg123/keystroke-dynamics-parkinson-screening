@@ -1,0 +1,8 @@
+# 테마를 고정해, 컴퓨터/브라우저의 라이트·다크 설정과 무관하게 항상 같은 색으로 보이게 함.
+# (다이얼로그·메뉴가 어떤 PC에서는 배경색과 같게 나오던 문제 방지)
+[theme]
+base = "light"
+primaryColor = "#C2842A"
+backgroundColor = "#FBF3E3"
+secondaryBackgroundColor = "#EFE5CE"
+textColor = "#2A2118"

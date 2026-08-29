@@ -1,0 +1,8 @@
+{
+  "upper": 66.6,
+  "lower": 49.9,
+  "target": 0.85,
+  "risk_class": "True",
+  "scoring": "score=100*(1-prob_PD)",
+  "description": "Logistic·3변수(요약CSV) 점수 100*(1-확률), 민감도/특이도 3구간"
+}
