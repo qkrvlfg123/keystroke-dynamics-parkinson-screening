@@ -34,6 +34,8 @@ PA트라슈는 사용자가 매일 "힐링레터"에 답장을 쓰는 동안 **�
 팀 프로젝트이며, 서비스 전체(기획 · 앱 UI · 미니게임 · 리포트)와 **피처 선별 · EDA는 팀 작업**이다.
 본인은 **팀이 선별한 3개 피처를 받아 모델을 만들고, SHAP으로 모델의 판단 근거를 해석·검증**하는 파트를 맡았다.
 
+📄 **발표자료 (내 파트: 모델링 및 소스 코드)** — [`docs/PA트라슈_모델링파트_발표자료.pdf`](./docs/PA트라슈_모델링파트_발표자료.pdf)
+
 | 구분 | 내용 |
 |---|---|
 | **모델링** | 선별된 3-feature(`hold_std`, `left_cv`, `hold_p90`)로 6개 후보 모델 학습·비교 → 로지스틱 회귀 채택 (`train_model.py`) |
@@ -141,6 +143,7 @@ python train_model.py
 ├── components/keystroke/         # 타이핑 리듬 수집 커스텀 컴포넌트 (keydown/keyup ms 페어링)
 ├── parkinson_model_3features.pkl # 학습된 모델 (hold_std, left_cv, hold_p90)
 ├── ml_score_thresholds.json      # 점수 구간 컷오프
+├── docs/                         # 발표자료 PDF · README figure(img/)
 ├── *.png                         # 앱 이미지 리소스
 └── requirements.txt
 ```
