@@ -39,6 +39,22 @@ PA트라슈는 사용자가 매일 "힐링레터"에 답장을 쓰는 동안 **�
 | **모델링** | 선별된 3-feature(`hold_std`, `left_cv`, `hold_p90`)로 6개 후보 모델 학습·비교 → 로지스틱 회귀 채택 (`train_model.py`) |
 | **SHAP 해석·검증** | SHAP으로 각 피처의 기여 방향·크기를 확인해, 로지스틱 계수 해석과 임상적 근거(변동성 증가 · 좌우 비대칭)에 부합하는지 검증 |
 
+**SHAP 피처 중요도** — 로지스틱 3특징의 평균 |SHAP| 기여도.
+`left_cv`(0.69) > `hold_std`(0.63) > `hold_p90`(0.57)로, 표준화 계수 순서(0.99 > 0.81 > 0.70)와 일치.
+세 특징 모두 위험을 높이는 방향이며, 왼손 변동이 가장 큰 신호(좌우 비대칭이라는 임상 근거와 부합).
+
+<img src="docs/img/shap_feature_importance.png" alt="로지스틱 3특징의 평균 |SHAP| 기여도" width="640">
+
+**ROC · 혼동행렬 (LOOCV, threshold 0.5)** — AUC 0.860 · Accuracy 0.800 · Sensitivity 0.762 · Specificity 0.837.
+교차검증: LOOCV 0.860 · 5-Fold 0.852 · 10-Fold 0.862 · Nested CV 0.853.
+
+<img src="docs/img/roc_confusion_matrix.png" alt="ROC curve와 confusion matrix (LOOCV)" width="760">
+
+**점수 분포 · 3구간 컷오프** — 점수 = 100 × (1 − 파킨슨 확률).
+상한 66.6(민감도 85%) · 하한 49.9(특이도 85%)로 안정 / 관찰 필요 / 상담 권장을 나눈다.
+
+<img src="docs/img/score_distribution_cutoff.png" alt="대조군·PD 점수 분포와 3구간 컷오프" width="760">
+
 ---
 
 ## 3. 모델 · 성능 · 실행법
