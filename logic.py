@@ -43,8 +43,8 @@ HEAL_LETTERS = [
     "오늘 누군가와 나눈 대화 중 기억에 남는 게 있었나요? 편하게 적어주세요.",
 ]
 
-# ---------- raw 키스트로크 → 요약(학습과 동일 정의) ----------
-# train_model.py 의 compute_features 와 반드시 동일한 규칙:
+# ---------- raw 키스트로크 → 요약 ----------
+# 학습 데이터(MIT 요약 CSV)의 변수 정의를 따라 브라우저 입력에서 같은 3변수를 근사 계산한다:
 #   · 정리 범위 : hold_time ∈ [0.03, 0.4] 초
 #   · 왼손 키   : QWERTY 왼쪽 글자 (q w e r t a s d f g z x c v b)
 #   · hold_std  : 누름시간 표본표준편차(ddof=1)
@@ -52,6 +52,7 @@ HEAL_LETTERS = [
 #   · left_cv   : 왼손 누름시간의 변동계수 (std(ddof=1)/mean)
 LEFT_KEYS = set("qwertasdfgzxcvb")
 HOLD_LO, HOLD_HI = 0.03, 0.4
+MIN_LEFT_STROKES = 5   # 왼손 타수가 이보다 적으면 변동계수를 계산하지 않는다
 
 def summarize_strokes(strokes):
     """브라우저가 넘긴 raw 스트로크 리스트를 학습과 동일하게 요약한다.
@@ -69,10 +70,15 @@ def summarize_strokes(strokes):
         holds.append(h)
         if str(st.get("k", "")).lower() in LEFT_KEYS:
             left.append(h)
-    hold_std = float(np.std(holds, ddof=1)) if len(holds) > 1 else 0.0
-    hold_p90 = float(np.percentile(holds, 90)) if holds else 0.0
+    # 계산할 수 없는 값은 0 이 아니라 결측(NaN)으로 둔다.
+    # 0 은 '변동이 전혀 없다'는 뜻이라 모델이 강한 '안정' 신호로 읽는다(left_cv 의 계수가 가장 크다).
+    # NaN 은 파이프라인의 SimpleImputer 가 학습 데이터의 중앙값으로 채운다.
+    nan = float("nan")
+    hold_std = float(np.std(holds, ddof=1)) if len(holds) > 1 else nan
+    hold_p90 = float(np.percentile(holds, 90)) if holds else nan
     left_mean = float(np.mean(left)) if left else 0.0
-    left_cv = float(np.std(left, ddof=1) / left_mean) if len(left) > 1 and left_mean != 0 else 0.0
+    left_cv = (float(np.std(left, ddof=1) / left_mean)
+               if len(left) >= MIN_LEFT_STROKES and left_mean != 0 else nan)
     return {"hold_std": hold_std, "left_cv": left_cv, "hold_p90": hold_p90}, len(holds)
 
 
@@ -111,17 +117,13 @@ def _coerce_features(features_dict):
 
 
 def predict_parkinson(features_dict):
-    """3개 피처(hold_std, left_cv, hold_p90) → 파킨슨 위험확률 → 건강점수(20~100)."""
+    """3개 피처(hold_std, left_cv, hold_p90) → 파킨슨 위험확률 → 건강점수(0~100)."""
     if parkinson_model is None:
         return 50
-
-    # 🔍 디버그: 원본 입력값 그대로 출력 (원인 파악용, 확인 끝나면 지워도 됨)
-    print(f"[DEBUG] 입력 타입: {type(features_dict).__name__}")
 
     # 브라우저가 raw 스트로크 리스트를 넘기면 학습과 동일하게 요약한다.
     if isinstance(features_dict, (list, tuple)):
         summarized, n_kept = summarize_strokes(features_dict)
-        print(f"[DEBUG] raw {len(features_dict)}타 → 유효 {n_kept}타 → 요약 {summarized}")
         features_dict = summarized
 
     try:
@@ -129,9 +131,6 @@ def predict_parkinson(features_dict):
     except (KeyError, TypeError, ValueError) as e:
         print(f"[predict_parkinson] 피처 오류로 중립 점수 반환: {e}")
         return 50
-
-    # 🔍 디버그: 보정 후 실제 모델에 들어가는 값
-    print(f"[DEBUG] 보정 후 vals(모델 입력): {vals}")
 
     df_input = pd.DataFrame([vals])[FEATURE_ORDER]
 
@@ -150,10 +149,6 @@ def predict_parkinson(features_dict):
     prob = parkinson_model.predict_proba(df_input)[0][risk_idx]
     final_score = int(round(100 * (1 - prob)))
     final_score = max(0, min(100, final_score))
-
-    # 🔍 디버그: 확률과 최종 점수
-    print(f"[DEBUG] risk_class={risk_class} prob(위험확률)={prob:.4f} "
-          f"final_score={final_score}")
 
     return int(final_score)
 

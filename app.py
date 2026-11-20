@@ -2063,7 +2063,7 @@ def screen_my():
         letter-spacing:normal !important; word-spacing:normal !important; text-justify:none !important;">
         본 서비스는 자가 점검용 스크리닝 보조 도구이며 식약처 인증을 획득한 전문 의료기기가 아닙니다. 
         측정 수치 및 변화량 리포트는 어떠한 경우에도 의사의 전문적인 진단 및 임상적 판단을 대신할 수 없습니다. 
-        지속적인 이상 증상이 우려될 시 반드시 가까운 대학병원 신경과 전문의 진료를 수강하시기 바랍니다.
+        지속적인 이상 증상이 우려될 시 반드시 가까운 대학병원 신경과 전문의 진료를 받으시기 바랍니다.
         </div>
         ''', unsafe_allow_html=True)  
         

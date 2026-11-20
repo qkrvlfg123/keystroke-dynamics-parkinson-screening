@@ -1,10 +1,8 @@
 """
 keystroke_letter — 키 입력 리듬 캡처 (양방향 Streamlit 컴포넌트, 빌드 불필요)
 
-브라우저에서 keydown/keyup 을 잡아 각 키의 hold time 과 flight time 을 '초' 단위로
-계산해 5개 피처(hold_std, flight_min, hold_mean, hold_median, press_interval_median)를
-Python 으로 돌려준다. 이 5개는 train_model.py / logic.py 의 FEATURE_ORDER 와 동일하며
-학습 데이터(MIT)와 같은 '초' 단위이다.
+브라우저에서 keydown/keyup 을 잡아 각 키의 누름시간(초)과 물리적 키 위치를 raw 스트로크 목록으로
+Python 에 돌려준다. 3개 피처(hold_std, left_cv, hold_p90) 요약은 logic.summarize_strokes 가 한다.
 
 반환 dict:
     {

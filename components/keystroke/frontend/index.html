@@ -94,8 +94,15 @@ function percentile(a, p){
   if(lo===hi) return b[lo];
   return b[lo] + (b[hi]-b[lo])*(idx-lo);
 }
-// 왼손 키(QWERTY 왼쪽 글자) — train_model.py 와 반드시 동일
+// 왼손 키(QWERTY 왼쪽 글자) — logic.py 의 LEFT_KEYS 와 반드시 동일
 const LEFT_KEYS = new Set("qwertasdfgzxcvb".split(""));
+// 키는 '입력된 글자'가 아니라 '물리적 위치'로 기록한다.
+// 한글 입력(IME) 중에는 ev.key 가 "Process" 나 한글 자모여서 영문 글자와 비교하면
+// 왼손 키가 하나도 잡히지 않았고, 그 결과 left_cv 가 항상 0 으로 계산됐다.
+// ev.code("KeyQ" 등)는 입력 언어와 무관하게 키 위치를 가리킨다.
+function physicalKey(ev){
+  return /^Key[A-Z]$/.test(ev.code) ? ev.code.slice(3).toLowerCase() : (ev.key || "");
+}
 // hold_time 정리 범위(초) — train_model.py 와 반드시 동일
 const HOLD_LO = 0.03, HOLD_HI = 0.4;
 
@@ -208,7 +215,7 @@ function render() {
     const t = performance.now();
     if (ev.code === "Backspace") { backspaceCount++; downSeq.push(t); drawWaveform(); return; }
     if (NON_PRINT.has(ev.code)) return;
-    if (!(ev.code in pending)) { pending[ev.code] = { t: t, key: ev.key }; }  // 오토리핏 무시
+    if (!(ev.code in pending)) { pending[ev.code] = { t: t, key: physicalKey(ev) }; }  // 오토리핏 무시
     downSeq.push(t);
     drawWaveform();
   });
